@@ -56,6 +56,7 @@ async function autoMigrate() {
                 price_student DECIMAL(10,2) DEFAULT 0.00,
                 status ENUM('upcoming', 'ongoing', 'completed', 'cancelled') DEFAULT 'upcoming',
                 registration_deadline DATE DEFAULT NULL,
+                created_by INT DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         `);
@@ -89,6 +90,10 @@ async function autoMigrate() {
             await promisePool.execute("ALTER TABLE events ADD COLUMN price_regular DECIMAL(10,2) DEFAULT 0.00");
             await promisePool.execute("ALTER TABLE events ADD COLUMN price_student DECIMAL(10,2) DEFAULT 0.00");
             console.log('✅ Added pricing columns to events');
+        }
+        if (!eventFields.includes('created_by')) {
+            await promisePool.execute("ALTER TABLE events ADD COLUMN created_by INT DEFAULT NULL");
+            console.log('✅ Added created_by column to events');
         }
         
         // Cleanup: Remove price_vip if exists
