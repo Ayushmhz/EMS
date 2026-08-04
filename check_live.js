@@ -8,8 +8,8 @@ async function check() {
         user: process.env.REMOTE_DB_USER,
         password: process.env.REMOTE_DB_PASS,
         database: process.env.REMOTE_DB_NAME || 'test',
-        port: 4000,
-        ssl: { minVersion: 'TLSv1.2', rejectUnauthorized: true }
+        port: parseInt(process.env.REMOTE_DB_PORT) || 3306,
+        ssl: { minVersion: 'TLSv1.2', rejectUnauthorized: false }
     });
 
     try {

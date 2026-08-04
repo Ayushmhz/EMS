@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/css/(.*)",
+      "destination": "/frontend/public/css/$1"
+    },
+    {
+      "source": "/js/(.*)",
+      "destination": "/frontend/public/js/$1"
+    },
+    {
+      "source": "/uploads/(.*)",
+      "destination": "/frontend/public/uploads/$1"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/frontend/public/$1"
+    }
+  ]
+}

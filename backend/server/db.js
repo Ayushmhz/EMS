@@ -1,5 +1,6 @@
 const mysql = require('mysql2');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 console.log(`📡 Attempting to connect to DB at: ${process.env.DB_HOST || 'NOT SET'}:${process.env.DB_PORT || '4000'}`);
 
@@ -12,7 +13,7 @@ const pool = mysql.createPool({
     ...(process.env.DB_HOST !== '127.0.0.1' && process.env.DB_HOST !== 'localhost' ? {
         ssl: {
             minVersion: 'TLSv1.2',
-            rejectUnauthorized: true
+            rejectUnauthorized: false
         }
     } : {}),
     waitForConnections: true,
@@ -26,6 +27,55 @@ const promisePool = pool.promise();
 async function autoMigrate() {
     try {
         console.log('🛡️  Running self-healing schema check...');
+
+        // 0. Ensure fundamental tables exist
+        await promisePool.execute(`
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                fullname VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
+                role ENUM('student', 'admin') DEFAULT 'student',
+                faculty VARCHAR(100) DEFAULT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        `);
+
+        await promisePool.execute(`
+            CREATE TABLE IF NOT EXISTS events (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                event_date DATE NOT NULL,
+                event_time TIME NOT NULL,
+                location VARCHAR(255) NOT NULL,
+                capacity INT NOT NULL,
+                image_url VARCHAR(255) DEFAULT NULL,
+                category ENUM('free', 'paid') DEFAULT 'free',
+                price_regular DECIMAL(10,2) DEFAULT 0.00,
+                price_student DECIMAL(10,2) DEFAULT 0.00,
+                status ENUM('upcoming', 'ongoing', 'completed', 'cancelled') DEFAULT 'upcoming',
+                registration_deadline DATE DEFAULT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        `);
+
+        await promisePool.execute(`
+            CREATE TABLE IF NOT EXISTS registrations (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                event_id INT NOT NULL,
+                registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                ticket_type ENUM('regular', 'student') DEFAULT 'regular',
+                payment_status ENUM('pending', 'paid', 'failed', 'refunded') DEFAULT 'pending',
+                amount DECIMAL(10,2) DEFAULT 0.00,
+                check_in_status ENUM('not_checked_in', 'checked_in') DEFAULT 'not_checked_in',
+                check_in_time TIMESTAMP NULL DEFAULT NULL,
+                transaction_id VARCHAR(255) DEFAULT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        `);
         
         // 1. Check Events table
         const [eventCols] = await promisePool.execute('DESCRIBE events');

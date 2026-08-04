@@ -1,8 +1,17 @@
-const API_BASE = window.location.hostname === 'localhost' || 
-                 window.location.hostname === '127.0.0.1' || 
-                 window.location.hostname.includes('ngrok')
-    ? ''
-    : 'https://event-management-system-hh4l.onrender.com';
+// Backend API URL Configuration
+// FOR PRODUCTION: Replace the fallback URL below with your actual deployed Render backend URL.
+// TIP: You can also temporarily override this in the browser console using: localStorage.setItem('BACKEND_URL', 'https://your-url.onrender.com')
+const API_BASE = localStorage.getItem('BACKEND_URL') || (
+    window.location.protocol === 'file:'
+        ? 'http://localhost:5000'
+        : (window.location.hostname === 'localhost' || 
+           window.location.hostname === '127.0.0.1' || 
+           window.location.hostname.includes('ngrok') ||
+           window.location.hostname.includes('loca.lt') ||
+           window.location.hostname.includes('trycloudflare.com')
+            ? ''
+            : 'https://event-management-system-hh4l.onrender.com') // <-- CHANGE THIS TO YOUR RENDER URL
+);
 
 
 async function apiFetch(endpoint, options = {}) {
