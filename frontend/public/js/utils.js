@@ -10,7 +10,7 @@ const API_BASE = localStorage.getItem('BACKEND_URL') || (
            window.location.hostname.includes('loca.lt') ||
            window.location.hostname.includes('trycloudflare.com')
             ? ''
-            : 'https://event-management-system-hh4l.onrender.com') // <-- CHANGE THIS TO YOUR RENDER URL
+            : 'https://ems-nk30.onrender.com') // <-- Deployed Render backend URL
 );
 
 
