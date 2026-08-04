@@ -131,7 +131,14 @@ function syncUserUI() {
     }
 
     const facultySelect = document.getElementById('settings-faculty');
-    if (facultySelect) facultySelect.value = currentUser.faculty || 'BCA';
+    if (facultySelect) {
+        facultySelect.value = currentUser.faculty || 'BCA';
+        if (isAdmin) {
+            facultySelect.removeAttribute('required');
+        } else {
+            facultySelect.setAttribute('required', 'required');
+        }
+    }
 
     const settingsPreview = document.getElementById('settings-profile-preview');
     if (settingsPreview) {
