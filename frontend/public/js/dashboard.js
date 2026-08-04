@@ -109,7 +109,7 @@ function syncUserUI() {
     const dropFaculty = document.getElementById('dropdown-user-faculty');
     if (dropFaculty) {
         dropFaculty.textContent = currentUser.faculty || '';
-        dropFaculty.style.display = 'block';
+        dropFaculty.style.display = isAdmin ? 'none' : 'block';
     }
 
     const welcome = document.getElementById('welcome-name');
@@ -126,7 +126,9 @@ function syncUserUI() {
     }
 
     const facultyGroup = document.getElementById('settings-faculty-group');
-    if (facultyGroup) facultyGroup.style.display = 'block';
+    if (facultyGroup) {
+        facultyGroup.style.display = isAdmin ? 'none' : 'block';
+    }
 
     const facultySelect = document.getElementById('settings-faculty');
     if (facultySelect) facultySelect.value = currentUser.faculty || 'BCA';
