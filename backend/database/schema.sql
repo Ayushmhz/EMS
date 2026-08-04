@@ -1,43 +1,101 @@
-CREATE DATABASE IF NOT EXISTS college_event_mgmt;
-USE college_event_mgmt;
+-- phpMyAdmin Compatible SQL Schema
+-- Database: college_event_mgmt
 
-CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    fullname VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'student') DEFAULT 'student',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
 
-CREATE TABLE IF NOT EXISTS events (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    event_date DATE NOT NULL,
-    event_time TIME NOT NULL,
-    location VARCHAR(255) NOT NULL,
-    capacity INT NOT NULL,
-    image_url VARCHAR(255) DEFAULT 'https://images.unsplash.com/photo-1540575861501-7ad05823c9f5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    registration_deadline DATE,
-    created_by INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
-);
+-- --------------------------------------------------------
 
-CREATE TABLE IF NOT EXISTS registrations (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    event_id INT NOT NULL,
-    registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY (user_id, event_id),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
-);
+-- Table structure for table `users`
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fullname` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` enum('student','admin') DEFAULT 'student',
+  `faculty` varchar(100) DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Insert a default admin (password: admin123)
--- bcrypt hash for 'admin123' is $2a$10$vI8qS.u7W036yRk.4.p4beVpE6E9E6E9E6E9E6E9E6E9E6E9
--- But for simplicity in initial setup, I'll use a placeholder or let them register.
--- Better to provide a way to seed or just let them register.
-INSERT INTO users (fullname, email, password, role) VALUES 
-('Admin User', 'admin@college.edu', '$2a$10$VRr/QKQ.X5EICXkaPbdhC.SyyglCEk9om/I/zfk7ZsoHgE88vNvVu', 'admin');
+-- --------------------------------------------------------
+
+-- Table structure for table `events`
+CREATE TABLE IF NOT EXISTS `events` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `description` text,
+  `event_date` date NOT NULL,
+  `event_time` time NOT NULL,
+  `location` varchar(255) NOT NULL,
+  `capacity` int(11) NOT NULL,
+  `image_url` varchar(255) DEFAULT NULL,
+  `category` enum('free','paid') DEFAULT 'free',
+  `price_regular` decimal(10,2) DEFAULT 0.00,
+  `price_student` decimal(10,2) DEFAULT 0.00,
+  `status` enum('upcoming','ongoing','completed','cancelled') DEFAULT 'upcoming',
+  `registration_deadline` date DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+-- Table structure for table `registrations`
+CREATE TABLE IF NOT EXISTS `registrations` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `event_id` int(11) NOT NULL,
+  `registration_date` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `ticket_type` enum('regular','student') DEFAULT 'regular',
+  `payment_status` enum('pending','paid','failed','refunded') DEFAULT 'pending',
+  `amount` decimal(10,2) DEFAULT 0.00,
+  `check_in_status` enum('not_checked_in','checked_in') DEFAULT 'not_checked_in',
+  `check_in_time` timestamp NULL DEFAULT NULL,
+  `transaction_id` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `event_id` (`event_id`),
+  CONSTRAINT `registrations_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `registrations_ibfk_2` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+-- Table structure for table `payments`
+CREATE TABLE IF NOT EXISTS `payments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `event_id` int(11) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `payment_method` varchar(50) NOT NULL,
+  `transaction_id` varchar(255) NOT NULL,
+  `pidx` varchar(255) DEFAULT NULL,
+  `ticket_type` varchar(50) NOT NULL,
+  `payment_status` enum('pending','paid','failed','refunded') DEFAULT 'pending',
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `event_id` (`event_id`),
+  CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `payments_ibfk_2` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+-- Table structure for table `transaction_logs`
+CREATE TABLE IF NOT EXISTS `transaction_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `event_id` int(11) DEFAULT NULL,
+  `gateway` varchar(50) DEFAULT NULL,
+  `pidx_or_oid` varchar(255) DEFAULT NULL,
+  `raw_response` text,
+  `status` varchar(50) DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+COMMIT;

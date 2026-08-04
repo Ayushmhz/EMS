@@ -7,6 +7,9 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const eventRoutes = require('./routes/events');
 const registrationRoutes = require('./routes/registrations');
+const paymentRoutes = require('./routes/payments');
+const analyticsRoutes = require('./routes/analytics');
+const verificationRoutes = require('./routes/verification');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,7 +22,7 @@ const frontendPath = path.resolve(__dirname, '../../frontend/public');
 app.use(cors({
     origin: '*', // For development, allow all. You can restrict this to your Vercel URL later.
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning']
 }));
 app.use(bodyParser.json());
 
@@ -36,6 +39,9 @@ app.use(express.static(frontendPath));
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/registrations', registrationRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/verification', verificationRoutes);
 
 // 3. Health Check
 app.get('/health', (req, res) => {

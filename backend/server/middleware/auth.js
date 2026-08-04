@@ -15,8 +15,10 @@ const authenticateToken = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-    if (req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'Access Denied' });
+    const role = (req.user.role || '').toLowerCase().trim();
+    if (role !== 'admin') {
+        console.warn(`Access Denied for user ${req.user.id}. Role: "${req.user.role}"`);
+        return res.status(403).json({ message: `Access Denied: Admin role required. Your role is: ${req.user.role}` });
     }
     next();
 };

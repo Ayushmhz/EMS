@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Entry Pass | CollegeEventHub</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            flex-direction: column;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .vintage-ticket {
+            display: flex;
+            width: 100%;
+            max-width: 900px;
+            min-height: 400px;
+            background: #fef3c7;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            color: #450a0a;
+            font-family: 'Courier New', Courier, monospace;
+            border: 12px solid #b91c1c;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .ticket-main {
+            flex: 1;
+            padding: 1.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            border-right: 4px dashed #b91c1c;
+            position: relative;
+        }
+
+        .vintage-ticket::before, .vintage-ticket::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 20px;
+            z-index: 10;
+        }
+        .vintage-ticket::before {
+            left: -10px;
+            background-image: radial-gradient(circle at 0 50%, transparent 10px, #b91c1c 11px);
+            background-size: 20px 20px;
+        }
+        .vintage-ticket::after {
+            right: -10px;
+            background-image: radial-gradient(circle at 20px 50%, transparent 10px, #b91c1c 11px);
+            background-size: 20px 20px;
+        }
+
+        .ticket-left h2 {
+            font-size: 2.5rem;
+            margin: 0;
+            text-transform: uppercase;
+            color: #b91c1c;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            font-weight: 900;
+            text-shadow: 1px 1px 0px rgba(185, 28, 28, 0.1);
+        }
+
+        .ticket-divider {
+            height: 2px;
+            background: #b91c1c;
+            margin: 1rem 0;
+            opacity: 0.3;
+        }
+
+        .ticket-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .detail-row {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .d-label {
+            font-size: 0.6rem;
+            letter-spacing: 1.5px;
+            opacity: 0.8;
+            font-weight: bold;
+            color: #b91c1c;
+        }
+
+        .d-value {
+            font-size: 0.85rem;
+            font-weight: 900;
+            margin-top: 1px;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            letter-spacing: 0.3px;
+        }
+
+        .ticket-policy {
+            font-size: 0.55rem;
+            line-height: 1.2;
+            opacity: 0.9;
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+
+        .ticket-stub {
+            width: 200px;
+            flex-shrink: 0;
+            background: #b91c1c;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem 1rem;
+            text-align: center;
+        }
+
+        .stub-text {
+            font-size: 1.1rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            opacity: 0.9;
+            white-space: nowrap;
+        }
+
+        .qr-box {
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+        }
+
+        .qr-box img {
+            width: 100px !important;
+            height: 100px !important;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .stub-id {
+            font-size: 0.8rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .btn-premium {
+            margin-top: 2rem;
+            background: #b91c1c;
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-premium:hover {
+            background: #991b1b;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="vintage-ticket" id="printable-ticket">
+        <div class="ticket-main">
+            <div class="ticket-left">
+                <h2 id="event-title">EVENT TITLE</h2>
+                <div class="ticket-divider"></div>
+                <div class="ticket-details">
+                    <div class="detail-row">
+                        <span class="d-label">DATE & TIME</span>
+                        <span class="d-value" style="display: flex; flex-direction: column;">
+                            <span id="event-date" style="white-space: nowrap;">---</span>
+                            <span id="event-time" style="font-size: 0.75rem; opacity: 0.9; white-space: nowrap;">---</span>
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="d-label">LOCATION</span>
+                        <span class="d-value" id="event-location" style="white-space: nowrap;">---</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="d-label">STUDENT ID</span>
+                        <span class="d-value" id="student-id-display">---</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="d-label">HOLDER</span>
+                        <span class="d-value" id="user-name" style="white-space: nowrap;">---</span>
+                    </div>
+                </div>
+                <div class="ticket-divider"></div>
+                <div class="ticket-policy">
+                    <strong style="display: block; margin-bottom: 2px; color: #b91c1c;">Entry Policy:</strong>
+                    <ul style="margin: 0; padding-left: 1rem;">
+                        <li>Physical ID card is mandatory for venue entry.</li>
+                        <li>Entry permitted 30 mins before start time.</li>
+                        <li>No refunds on cancelled registrations.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="ticket-stub">
+            <div class="stub-text">ENTRY PASS</div>
+            <div id="qr-code" class="qr-box">
+                <!-- QR Code goes here -->
+            </div>
+            <div class="stub-id" id="registration-id">#000000</div>
+        </div>
+    </div>
+
+    <button class="btn-premium" onclick="downloadTicketImage()">
+        📥 Download Official Entry Pass
+    </button>
+    
+    <a href="dashboard.html" style="margin-top: 1rem; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.9rem;">
+        &larr; Back to Dashboard
+    </a>
+
+    <script src="js/utils.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = checkAuth();
+            if (!user) return;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const regId = urlParams.get('id');
+
+            if (!regId) {
+                alert('No ticket ID provided');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            try {
+                const ticket = await apiFetch(`/api/registrations/ticket/${regId}`);
+                
+                document.getElementById('event-title').textContent = ticket.event_title;
+                document.getElementById('user-name').textContent = ticket.user_name;
+                document.getElementById('event-date').textContent = formatDate(ticket.event_date);
+                document.getElementById('event-time').textContent = ticket.event_time;
+                document.getElementById('event-location').textContent = ticket.location;
+                
+                const studentIdFormatted = `#${String(regId).padStart(6, '0')}`;
+                document.getElementById('student-id-display').textContent = studentIdFormatted;
+                document.getElementById('registration-id').textContent = studentIdFormatted;
+
+                const qrData = JSON.stringify({
+                    reg_id: regId,
+                    student: ticket.user_name,
+                    event: ticket.event_title,
+                    type: ticket.ticket_type
+                });
+
+                const tempDiv = document.createElement('div');
+                new QRCode(tempDiv, {
+                    text: qrData,
+                    width: 256,
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+
+                setTimeout(() => {
+                    const canvas = tempDiv.querySelector('canvas');
+                    if (canvas) {
+                        const dataUrl = canvas.toDataURL("image/jpeg", 1.0);
+                        const img = document.createElement('img');
+                        img.src = dataUrl;
+                        img.id = 'final-qr-img';
+                        document.getElementById('qr-code').innerHTML = '';
+                        document.getElementById('qr-code').appendChild(img);
+                    }
+                }, 200);
+
+            } catch (err) {
+                console.error(err);
+                alert('Failed to load ticket details');
+            }
+        });
+
+        function downloadTicketImage() {
+            const { jsPDF } = window.jspdf;
+            const element = document.getElementById('printable-ticket');
+            const eventName = document.getElementById('event-title').textContent;
+            
+            html2canvas(element, {
+                scale: 3,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#b91c1c'
+            }).then(canvas => {
+                const imgData = canvas.toDataURL("image/jpeg", 0.95);
+                
+                // Get exact dimensions of the ticket in mm (1px = 0.264583mm)
+                const widthMm = element.offsetWidth * 0.264583;
+                const heightMm = element.offsetHeight * 0.264583;
+
+                // Create PDF in landscape with the exact custom dimension of the ticket
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: [widthMm, heightMm]
+                });
+                
+                // Draw the high-quality ticket canvas onto the PDF full-bleed
+                pdf.addImage(imgData, 'JPEG', 0, 0, widthMm, heightMm);
+                
+                // Trigger download as PDF
+                pdf.save(`Official_Entry_Pass_${eventName.replace(/\s+/g, '_')}.pdf`);
+            });
+        }
+    </script>
+</body>
+</html>

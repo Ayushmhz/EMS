@@ -1,12 +1,16 @@
-// Update this URL AFTER you deploy your backend to Render
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const API_BASE = window.location.hostname === 'localhost' || 
+                 window.location.hostname === '127.0.0.1' || 
+                 window.location.hostname.includes('ngrok')
     ? ''
     : 'https://event-management-system-hh4l.onrender.com';
 
 
 async function apiFetch(endpoint, options = {}) {
     let token = localStorage.getItem('token');
-    const headers = { ...options.headers };
+    const headers = { 
+        'ngrok-skip-browser-warning': 'true',
+        ...options.headers 
+    };
 
     // If body is not FormData, default to JSON
     // If body IS FormData, do NOT set Content-Type header manually, let browser set boundary
@@ -27,6 +31,7 @@ async function apiFetch(endpoint, options = {}) {
     };
 
     try {
+        console.log(`[API Request] ${options.method || 'GET'} ${API_BASE}${endpoint}`);
         const response = await fetch(`${API_BASE}${endpoint}`, config);
 
         // Check if response is empty (204 No Content)
@@ -107,7 +112,26 @@ function checkAuth(roleRequired = null) {
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    // User requested format: Month Day, Year (e.g., May 25, 2026)
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function formatTime(timeString) {
+    if (!timeString) return 'N/A';
+    // Handle formats like '10:00:00' or '10:00'
+    const parts = timeString.split(':');
+    const hours = parseInt(parts[0]);
+    const minutes = parseInt(parts[1]);
+    
+    const date = new Date();
+    date.setHours(hours);
+    date.setMinutes(minutes);
+    
+    return date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: true 
+    });
 }
 
 function validatePassword(password) {

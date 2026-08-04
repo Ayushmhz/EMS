@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Failed | Event Management</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .status-container {
+            max-width: 500px;
+            margin: 100px auto;
+            text-align: center;
+            padding: 3rem;
+        }
+        .failure-icon {
+            font-size: 5rem;
+            color: #ef4444;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="glass status-container animate-fade">
+            <div class="failure-icon">❌</div>
+            <h1 style="margin-bottom: 1rem;">Payment Failed</h1>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;" id="failure-reason">Something went wrong during the transaction. Your registration was not completed.</p>
+            
+            <div style="display: flex; gap: 1rem;">
+                <a href="dashboard.html" class="btn btn-outline" style="flex: 1;">Return to Dashboard</a>
+                <button onclick="window.history.back()" class="btn btn-primary" style="flex: 1;">Try Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const reason = urlParams.get('reason');
+        const reasonEl = document.getElementById('failure-reason');
+        
+        if (reason === 'cancelled') {
+            reasonEl.textContent = "The payment was cancelled by the user. No charges were made.";
+        } else if (reason === 'verification_failed') {
+            reasonEl.textContent = "We couldn't verify your payment with the provider. Please contact support.";
+        }
+    </script>
+</body>
+</html>

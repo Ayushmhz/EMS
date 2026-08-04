@@ -18,6 +18,10 @@
             border-right: 1px solid var(--glass-border);
             display: flex;
             flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
         }
 
         .sidebar-nav {
@@ -117,7 +121,9 @@
                 padding: 1.5rem;
                 position: sticky;
                 top: 0;
-                z-index: 100;
+                z-index: 1000;
+                height: auto !important;
+                overflow-y: visible;
             }
 
             .mobile-toggle {
@@ -132,6 +138,9 @@
 
             .sidebar-content.active {
                 display: block;
+                max-height: 80vh;
+                overflow-y: auto;
+                padding-bottom: 1rem;
             }
 
             .sidebar-nav {
@@ -143,8 +152,8 @@
 
             .nav-item {
                 margin-bottom: 0;
-                padding: 1rem;
-                font-size: 1rem;
+                padding: 0.75rem 1rem;
+                font-size: 0.95rem;
                 width: 100%;
                 justify-content: flex-start;
             }
@@ -174,20 +183,67 @@
 
             header {
                 flex-direction: column;
-                align-items: flex-start !important;
+                align-items: stretch !important;
                 gap: 1rem;
             }
 
-            #admin-actions {
+            header > div:last-child {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem !important;
                 width: 100%;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            #view-mode-toggle {
+                order: 2;
+            }
+
+            #admin-actions {
+                order: 1;
+                width: auto !important;
             }
 
             #admin-actions button {
                 width: 100%;
             }
 
+            .profile-dropdown {
+                order: 3;
+            }
+
             .detail-modal-grid {
                 grid-template-columns: 1fr !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 1rem;
+            }
+
+            header > div:last-child {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 1rem !important;
+            }
+
+            #view-mode-toggle, 
+            #admin-actions, 
+            #admin-actions button,
+            .profile-dropdown {
+                width: 100% !important;
+            }
+
+            .profile-dropdown {
+                justify-content: center !important;
+            }
+            
+            .dropdown-menu {
+                width: 100% !important;
+                left: 0 !important;
+                right: 0 !important;
             }
         }
 
@@ -307,16 +363,19 @@
             <div id="sidebar-content" class="sidebar-content">
                 <div class="sidebar-nav">
                     <div class="nav-item active" onclick="showSection('home')">Home</div>
-                    <div class="nav-item" onclick="showSection('browse')">Browse Events</div>
+                    <!-- Student: flat Browse Events -->
+                    <div class="nav-item" id="browse-nav-btn" onclick="showSection('browse')">Browse Events</div>
+                    <!-- Admin: nested Events parent -->
+                    <div class="nav-item" id="events-parent-btn" style="display: none;" onclick="toggleEventsSubmenu()">Events ▾</div>
+                    <div id="events-submenu" style="display: none; padding-left: 1rem;">
+                        <div class="nav-item" id="admin-browse-nav-btn" onclick="showSection('browse')" style="font-size: 0.88rem;">• Browse Events</div>
+                        <div class="nav-item" id="admin-manage-nav-btn" onclick="showSection('manage')" style="font-size: 0.88rem;">• Manage Events</div>
+                    </div>
                     <div class="nav-item" id="student-regs-btn" onclick="showSection('my-regs')">My Registrations</div>
-                    <div class="nav-item" id="admin-mgmt-btn" style="display: none;" onclick="showSection('manage')">
-                        Manage
-                        Events</div>
-                    <div class="nav-item" id="admin-regs-btn" style="display: none;" onclick="showSection('all-regs')">
-                        Student Registrations</div>
-                    <div class="nav-item" id="admin-users-btn" style="display: none;" onclick="showSection('users')">
-                        User
-                        Management</div>
+                    <div class="nav-item" id="admin-revenue-btn" style="display: none;" onclick="showSection('revenue')">Revenue Analytics</div>
+                    <div class="nav-item" id="admin-verify-btn" style="display: none;" onclick="showSection('verify')">QR Verification</div>
+                    <div class="nav-item" id="admin-regs-btn" style="display: none;" onclick="showSection('all-regs')">Student Registrations</div>
+                    <div class="nav-item" id="admin-users-btn" style="display: none;" onclick="showSection('users')">User Management</div>
                     <div class="nav-item" onclick="showSection('settings')">Settings</div>
                 </div>
             </div>
@@ -335,6 +394,10 @@
                     <h2 id="section-title" style="margin: 0;">Home</h2>
                 </div>
                 <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <div id="view-mode-toggle" style="display: flex; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                        <button id="view-list-btn" onclick="setViewMode('list')" class="btn btn-sm" style="padding: 4px 10px; font-size: 0.7rem; border-radius: 6px; background: transparent; color: var(--text-muted); border: none;">List</button>
+                        <button id="view-card-btn" onclick="setViewMode('card')" class="btn btn-sm" style="padding: 4px 10px; font-size: 0.7rem; border-radius: 6px; background: var(--primary); color: white; border: none;">Card</button>
+                    </div>
                     <div id="admin-actions" style="display: none;">
                         <button class="btn btn-primary" onclick="openModal()">+ Create Event</button>
                     </div>
@@ -409,7 +472,7 @@
                         style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                         <div class="glass" style="padding: 1.5rem; cursor: pointer; transition: 0.3s;"
                             onclick="showSection('browse')">
-                            <h4 style="color: var(--primary); margin-bottom: 0.5rem;">🔍 Browse Events</h4>
+                            <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Browse Events</h4>
                             <p style="font-size: 0.9rem;">Discover workshops, seminars, and fests happening on campus.
                             </p>
                         </div>
@@ -428,7 +491,20 @@
             </section>
 
             <!-- Browse Section -->
-            <section id="browse-section" class="event-grid">
+            <section id="browse-section" style="display: none;">
+                <div class="glass" style="padding: 1rem; margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center; border-radius: 12px;">
+                    <span style="font-weight: 600; color: var(--text-muted);">Filter:</span>
+                    <button class="btn btn-primary btn-sm filter-btn active" onclick="filterEvents('all', this)">All Events</button>
+                    <button class="btn btn-outline btn-sm filter-btn" onclick="filterEvents('free', this)">Free</button>
+                    <button class="btn btn-outline btn-sm filter-btn" onclick="filterEvents('paid', this)">Paid</button>
+                </div>
+                <div id="event-cards-container" class="event-grid">
+                    <!-- Loaded via JS -->
+                </div>
+            </section>
+
+            <!-- Manage Events Section -->
+            <section id="manage-section" class="event-grid" style="display: none;">
                 <!-- Loaded via JS -->
             </section>
 
@@ -437,21 +513,16 @@
                 <!-- Loaded via JS -->
             </section>
 
-            <!-- Manage Events Section -->
-            <section id="manage-section" class="event-grid" style="display: none;">
-                <!-- Loaded via JS -->
-            </section>
-
             <!-- Student Registrations Section (Admin Only) -->
             <section id="all-regs-section" style="display: none;">
                 <div class="glass" style="padding: 1rem; border-radius: 12px; overflow-x: auto;">
                     <div
                         style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1rem 1rem;">
-                        <h3 style="margin: 0; -webkit-text-fill-color: white; background: none;">📋 Student
+                        <h3 style="margin: 0; -webkit-text-fill-color: white; background: none;">Student
                             Registrations</h3>
                         <button class="btn btn-primary" onclick="exportRegistrationsToExcel()"
                             style="padding: 0.5rem 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
-                            📊 Export to Excel
+                            Export to Excel
                         </button>
                     </div>
                     <table id="grouped-regs-table" style="width: 100%; border-collapse: collapse; text-align: left;">
@@ -574,6 +645,70 @@
                     </form>
                 </div>
             </section>
+
+            <!-- Revenue Analytics Section (Admin Only) -->
+            <section id="revenue-section" style="display: none;">
+                <div class="stats-grid" id="revenue-stats">
+                    <!-- Revenue cards loaded via JS -->
+                </div>
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem;">
+                    <div class="glass" style="padding: 1.5rem;">
+                        <h4 style="margin-bottom: 1.5rem;">Monthly Revenue</h4>
+                        <canvas id="revenue-chart" height="250"></canvas>
+                    </div>
+                    <div class="glass" style="padding: 1.5rem;">
+                        <h4 style="margin-bottom: 1.5rem;">Payment Success Rate</h4>
+                        <canvas id="payment-pie-chart" height="250"></canvas>
+                    </div>
+                </div>
+                <div class="glass" style="padding: 1.5rem; border-radius: 12px; overflow-x: auto;">
+                    <h4 style="margin-bottom: 1.5rem;">Recent Transactions</h4>
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--glass-border); color: var(--text-muted); font-size: 0.8rem;">
+                                <th style="padding: 0.75rem;">Student</th>
+                                <th style="padding: 0.75rem;">Event</th>
+                                <th style="padding: 0.75rem;">Amount</th>
+                                <th style="padding: 0.75rem;">Method</th>
+                                <th style="padding: 0.75rem;">Status</th>
+                                <th style="padding: 0.75rem;">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-transactions-table">
+                            <!-- Loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- QR Verification Section (Admin Only) -->
+            <section id="verify-section" style="display: none;">
+                <div class="glass" style="max-width: 600px; margin: 0 auto; padding: 2.5rem; text-align: center;">
+                    <h3 style="margin-bottom: 1.5rem;">Ticket ID Verification</h3>
+                    
+                    <div class="form-group" style="text-align: left; margin-bottom: 1.5rem;">
+                        <label for="verify-ticket-id">Ticket ID</label>
+                        <input type="number" id="verify-ticket-id" placeholder="Enter Ticket ID" style="width: 100%;">
+                        <div id="verify-ticket-id-error" style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; display: none; font-weight: 600;">Invalid Ticket ID</div>
+                    </div>
+
+                    <div class="form-group" style="text-align: left; margin-bottom: 2rem;">
+                        <label for="verify-student-name">Student Name</label>
+                        <input type="text" id="verify-student-name" readonly placeholder="" style="width: 100%; opacity: 0.8; cursor: not-allowed; background: rgba(255,255,255,0.05);">
+                    </div>
+
+                    <button class="btn btn-primary" style="width: 100%;" onclick="verifyTicketByID()">Verify Ticket</button>
+                </div>
+
+                <!-- Verification Result Modal (Internal to Section) -->
+                <div id="verification-result" class="glass" style="display: none; margin-top: 2rem; padding: 2rem; border-radius: 12px; animation: slideUp 0.3s ease;">
+                    <div id="result-status-icon" style="font-size: 2rem; margin-bottom: 1rem;"></div>
+                    <h4 id="result-message" style="margin-bottom: 1rem;"></h4>
+                    <div id="result-details" style="text-align: left; font-size: 0.9rem; color: var(--text-muted);">
+                        <!-- Details loaded here -->
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -595,8 +730,7 @@
 
             <!-- Zoom slider -->
             <div style="margin-bottom:1.2rem;">
-                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:0.4rem;">🔍
-                    Zoom</label>
+                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:0.4rem;">Zoom</label>
                 <input type="range" id="crop-zoom" min="0.5" max="3" step="0.01" value="1"
                     style="width:100%; accent-color:var(--primary);">
             </div>
@@ -623,6 +757,10 @@
                 <div class="form-group">
                     <label>Description</label>
                     <textarea id="event-desc" rows="6" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Registration Deadline Date</label>
+                    <input type="date" id="event-deadline" required>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
@@ -652,9 +790,28 @@
                             style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 8px;">
                     </div>
                 </div>
+
+                <!-- Category and Pricing Fields -->
                 <div class="form-group">
-                    <label>Registration Deadline Date</label>
-                    <input type="date" id="event-deadline" required>
+                    <label>Event Category</label>
+                    <select id="event-category" onchange="togglePriceFields()" required
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; background: rgba(0,0,0,0.2); color: white; border: 1px solid var(--glass-border);">
+                        <option value="free" style="color: black;">Free Event</option>
+                        <option value="paid" style="color: black;">Paid Event</option>
+                    </select>
+                </div>
+
+                <div id="price-fields" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label>Regular Price (Rs.)</label>
+                            <input type="number" id="price-regular" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Student Price (Rs.)</label>
+                            <input type="number" id="price-student" value="0">
+                        </div>
+                    </div>
                 </div>
                 <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                     <button type="button" class="btn btn-outline" style="flex: 1;"
@@ -710,15 +867,256 @@
                     style="color: var(--text-muted); line-height: 1.7; white-space: pre-wrap; font-size: 0.95rem;"></p>
             </div>
 
+            <!-- Reviews & Ratings Section -->
+            <div style="border-top: 1px solid var(--glass-border); padding-top: 1.5rem; margin-top: 1.5rem;">
+                <h4 style="color: var(--text-main); margin-bottom: 0.75rem;">Reviews & Ratings</h4>
+                
+                <!-- Aggregate rating -->
+                <div id="detail-reviews-summary" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                    <div style="font-size: 2.2rem; font-weight: 800; color: #fff;" id="avg-rating-value">0.0</div>
+                    <div style="display: flex; flex-direction: column;">
+                        <div style="display: flex; gap: 2px; color: #f59e0b; font-size: 1.1rem;" id="avg-rating-stars">
+                            <!-- Star icons -->
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);" id="review-count-value">0 reviews</div>
+                    </div>
+                </div>
+
+                <!-- Reviews list -->
+                <div id="detail-reviews-list" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; padding-right: 0.5rem;">
+                    <!-- Dynamically populated review items -->
+                </div>
+
+                <!-- Submit Review Form -->
+                <div id="add-review-section" style="display: none; border-top: 1px dashed var(--glass-border); padding-top: 1.25rem;">
+                    <h5 style="color: var(--text-main); margin: 0 0 0.5rem 0; font-size: 0.9rem;">Write a Review</h5>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Your Rating:</span>
+                        <div style="display: flex; gap: 4px;" id="rating-stars-input">
+                            <span class="star-btn" data-value="1" style="font-size: 1.5rem; cursor: pointer; color: #475569; transition: color 0.2s;">★</span>
+                            <span class="star-btn" data-value="2" style="font-size: 1.5rem; cursor: pointer; color: #475569; transition: color 0.2s;">★</span>
+                            <span class="star-btn" data-value="3" style="font-size: 1.5rem; cursor: pointer; color: #475569; transition: color 0.2s;">★</span>
+                            <span class="star-btn" data-value="4" style="font-size: 1.5rem; cursor: pointer; color: #475569; transition: color 0.2s;">★</span>
+                            <span class="star-btn" data-value="5" style="font-size: 1.5rem; cursor: pointer; color: #475569; transition: color 0.2s;">★</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="review-comment-input" placeholder="What did you think of the event?" style="flex: 1; padding: 0.6rem 0.9rem; font-size: 0.85rem; border-radius: 8px; background: rgba(0,0,0,0.25); color: white; border: 1px solid var(--glass-border); outline: none;">
+                        <button onclick="submitEventReview()" class="btn btn-primary" style="padding: 0.6rem 1.2rem; font-size: 0.85rem; font-weight: 700; border-radius: 8px;">Submit</button>
+                    </div>
+                </div>
+            </div>
+
             <div id="detail-actions" style="margin-top: 2rem;">
                 <!-- Filled via JS -->
             </div>
         </div>
     </div>
 
+    <!-- Premium Ticket QR Modal -->
+    <div id="qr-modal" class="modal" style="padding: 2rem 0;">
+        <div class="glass modal-content" style="width: 420px; background: #0b0f1a; padding: 0; overflow-y: auto; max-height: 90vh; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); position: relative; border-radius: 24px; scrollbar-width: none;">
+            <style>
+                .modal-content::-webkit-scrollbar { display: none; }
+            </style>
+            <button class="close-btn" onclick="closeQRModal()" style="position: absolute; top: 1.25rem; right: 1.25rem; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; transition: 0.3s; z-index: 100;">&times;</button>
+            
+            <div id="premium-ticket" style="background: linear-gradient(165deg, #131a2e 0%, #080b14 100%); padding: 3rem 2.5rem; position: relative; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <!-- Modern Backdrop Glow -->
+                <div style="position: absolute; top: -50px; left: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%); pointer-events: none;"></div>
+                <div style="position: absolute; bottom: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%); pointer-events: none;"></div>
+                
+                <!-- 1. ENTRY PASS Title -->
+                <div style="margin-bottom: 2rem;">
+                    <span style="font-size: 0.7rem; font-weight: 800; color: var(--primary); letter-spacing: 4px; text-transform: uppercase; opacity: 0.9; margin-bottom: 0.5rem; display: block;">OFFICIAL</span>
+                    <h1 style="font-size: 2.2rem; margin: 0; color: #fff; background: linear-gradient(to bottom, #fff 0%, #cbd5e1 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; letter-spacing: -1px; line-height: 1;">ENTRY PASS</h1>
+                </div>
+
+                <!-- 2. Event Name -->
+                <div style="margin-bottom: 1rem; width: 100%;">
+                    <p style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 700;">EVENT NAME</p>
+                    <h2 id="qr-event-title-display" style="font-size: 1.4rem; color: #fff; background: none; -webkit-text-fill-color: #fff; font-weight: 700; margin: 0; line-height: 1.3;">EVENT TITLE</h2>
+                </div>
+
+                <!-- 3. Ticket Type Badge -->
+                <div style="margin-bottom: 2.5rem;">
+                    <div id="qr-ticket-type-display" style="display: inline-block; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 6px 16px; border-radius: 100px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; border: 1px solid rgba(99, 102, 241, 0.3); box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);">STUDENT PASS</div>
+                </div>
+
+                <!-- 4. QR Code Section -->
+                <div style="background: #111827; padding: 1.5rem; border-radius: 28px; margin-bottom: 2.5rem; border: 1px solid rgba(255,255,255,0.1); position: relative;">
+                    <div style="background: #fff; padding: 12px; border-radius: 16px;">
+                        <div id="qr-code-container" style="width: 160px; height: 160px; display: flex; align-items: center; justify-content: center; background: #fff;">
+                            <!-- QR Code Injected Here -->
+                        </div>
+                    </div>
+                    <!-- Aesthetic scanline effect -->
+                    <div style="position: absolute; top: 1.5rem; left: 1.5rem; right: 1.5rem; height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent); opacity: 0.5; animation: scanline 3s linear infinite;"></div>
+                </div>
+
+                <!-- 5. User Details Section -->
+                <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); position: relative;">
+                    <!-- Perforation Cutouts -->
+                    <div style="position: absolute; top: -10px; left: -35px; width: 20px; height: 20px; border-radius: 50%; background: #0b0f1a;"></div>
+                    <div style="position: absolute; top: -10px; right: -35px; width: 20px; height: 20px; border-radius: 50%; background: #0b0f1a;"></div>
+                    
+                    <div style="text-align: left;">
+                        <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 700;">ATTENDEE NAME</p>
+                        <h3 id="qr-student-name-display" style="font-size: 0.95rem; margin: 0; background: none; -webkit-text-fill-color: #fff; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Student Name</h3>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 700;">TICKET ID</p>
+                        <p id="qr-reg-id-display" style="font-size: 0.95rem; font-weight: 800; margin: 0; font-family: 'JetBrains Mono', monospace; color: var(--primary);">#000000</p>
+                    </div>
+                </div>
+                
+                <!-- Terms & Conditions Section -->
+                <div style="width: 100%; margin-top: 2rem; text-align: left; padding: 1.25rem; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
+                    <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 0.75rem; font-weight: 800;">Terms & Conditions</p>
+                    <ul style="margin: 0; padding-left: 1rem; color: var(--text-muted); font-size: 0.65rem; line-height: 1.6; font-weight: 500;">
+                        <li style="margin-bottom: 0.5rem; padding-left: 0.5rem;">Student must bring their physical ID card.</li>
+                        <li style="margin-bottom: 0.5rem; padding-left: 0.5rem;">Participants must enter 15 minutes before the start time.</li>
+                        <li style="margin-bottom: 0.5rem; padding-left: 0.5rem;">One ticket is valid for one entry only.</li>
+                        <li style="padding-left: 0.5rem;">Entry is allowed only with a valid QR ticket.</li>
+                    </ul>
+                </div>
+                
+                <!-- Bottom Decoration -->
+                <div style="margin-top: 2.5rem; width: 40px; height: 4px; background: var(--primary); border-radius: 10px; opacity: 0.3;"></div>
+            </div>
+
+            <!-- 6. Download Button Section -->
+            <div style="padding: 1.5rem 2.5rem 2.5rem; background: #080b14; display: flex; flex-direction: column; gap: 1rem;">
+                <button onclick="downloadTicket()" class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem; font-size: 0.9rem; padding: 1rem; font-weight: 800; border-radius: 16px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); transition: 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                    <span>📥</span> DOWNLOAD ENTRY PASS
+                </button>
+                <p style="font-size: 0.65rem; color: var(--text-muted); text-align: center; opacity: 0.6; line-height: 1.4; max-width: 80%; margin: 0 auto;">
+                    This is an electronic ticket. Please present it at the entrance for verification.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes scanline {
+            0% { transform: translateY(0); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(160px); opacity: 0; }
+        }
+    </style>
+
+    <!-- Cancel Registration Confirmation Modal -->
+    <div id="cancel-reg-modal" class="modal" style="display: none; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 10000; transition: opacity 0.3s ease;">
+        <div class="glass modal-content animate-fade" style="width: 100%; max-width: 420px; padding: 2.5rem; border-radius: 24px; border: 1px solid var(--glass-border); background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); position: relative; overflow: visible; text-align: center;">
+            <p style="color: #fff; font-size: 1.15rem; font-weight: 600; line-height: 1.5; margin-bottom: 2rem; font-family: 'Outfit', sans-serif;">Are you sure you want to cancel this event's registration?</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <button type="button" class="btn btn-outline" onclick="closeCancelRegModal()" style="border-radius: 12px; font-weight: 600; padding: 0.8rem; font-family: 'Outfit', sans-serif;">No</button>
+                <button type="button" class="btn" onclick="confirmCancelRegistration()" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border-radius: 12px; font-weight: 600; padding: 0.8rem; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); border: none; font-family: 'Outfit', sans-serif; transition: 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Reset Confirmation Modal -->
+    <div id="reset-confirm-modal" class="modal" style="display: none; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 10000; transition: opacity 0.3s ease;">
+        <div class="glass modal-content animate-fade" style="width: 100%; max-width: 420px; padding: 2.5rem; border-radius: 24px; border: 1px solid var(--glass-border); background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); position: relative; overflow: visible; text-align: center;">
+            <p style="color: #fff; font-size: 1.15rem; font-weight: 600; line-height: 1.5; margin-bottom: 2rem; font-family: 'Outfit', sans-serif;">Are you sure you want to reset this user's password?</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <button type="button" class="btn btn-outline" onclick="closeResetConfirmModal()" style="border-radius: 12px; font-weight: 600; padding: 0.8rem; font-family: 'Outfit', sans-serif;">No</button>
+                <button type="button" class="btn" onclick="confirmResetPassword()" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border-radius: 12px; font-weight: 600; padding: 0.8rem; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); border: none; font-family: 'Outfit', sans-serif; transition: 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Reset Success Modal -->
+    <div id="reset-success-modal" class="modal" style="display: none; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 10000; transition: opacity 0.3s ease;">
+        <div class="glass modal-content animate-fade" style="width: 100%; max-width: 420px; padding: 2.5rem; border-radius: 24px; border: 1px solid var(--glass-border); background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); position: relative; overflow: visible; text-align: center;">
+            <p style="color: #fff; font-size: 1.15rem; font-weight: 600; line-height: 1.5; margin-bottom: 2rem; font-family: 'Outfit', sans-serif;">Password successfully reset to password123</p>
+            <div style="display: flex; justify-content: center;">
+                <button type="button" class="btn btn-primary" onclick="closeResetSuccessModal()" style="width: 100%; max-width: 200px; border-radius: 12px; font-weight: 600; padding: 0.8rem; font-family: 'Outfit', sans-serif;">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logout-modal" class="modal" style="display: none; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 10000; transition: opacity 0.3s ease;">
+        <div class="glass modal-content animate-fade" style="width: 100%; max-width: 420px; padding: 2.5rem; border-radius: 24px; border: 1px solid var(--glass-border); background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); position: relative; overflow: visible; text-align: center;">
+            
+            <button type="button" class="close-btn" onclick="closeLogoutModal()" style="top: 1rem; right: 1rem; width: 30px; height: 30px; font-size: 1rem;">&times;</button>
+            
+            <div style="width: 70px; height: 70px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 0 20px rgba(239, 68, 68, 0.1);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+            </div>
+            
+            <h3 style="margin-bottom: 0.75rem; font-size: 1.5rem; font-weight: 700; color: #fff; background: none; -webkit-text-fill-color: #fff;">Confirm Logout</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 2rem;">Are you sure you want to log out?</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <button type="button" class="btn btn-outline" onclick="closeLogoutModal()" style="border-radius: 12px; font-weight: 600; padding: 0.8rem; font-family: 'Outfit', sans-serif;">Cancel</button>
+                <button type="button" class="btn" onclick="confirmLogout()" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border-radius: 12px; font-weight: 600; padding: 0.8rem; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); border: none; font-family: 'Outfit', sans-serif; transition: 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">Yes, Log me out</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Registration Restriction Modal -->
+    <div id="admin-restrict-modal" class="modal" style="display: none; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 10000; transition: opacity 0.3s ease;">
+        <div class="glass modal-content animate-fade" style="width: 100%; max-width: 420px; padding: 2.5rem; border-radius: 24px; border: 1px solid var(--glass-border); background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); position: relative; overflow: visible; text-align: center;">
+            <button type="button" class="close-btn" onclick="closeAdminRestrictModal()" style="top: 1rem; right: 1rem; width: 30px; height: 30px; font-size: 1rem;">&times;</button>
+            
+            <div style="width: 70px; height: 70px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 0 20px rgba(239, 68, 68, 0.1);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            
+            <h3 style="margin-bottom: 0.75rem; font-size: 1.5rem; font-weight: 700; color: #fff; background: none; -webkit-text-fill-color: #fff;">Registration Not Allowed</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 2rem;">Only students can register for the events. Admin can only manage and edit the events.</p>
+            
+            <button type="button" class="btn btn-primary" onclick="closeAdminRestrictModal()" style="width: 100%; border-radius: 12px; font-weight: 600; padding: 0.8rem; font-family: 'Outfit', sans-serif;">OK</button>
+        </div>
+    </div>
+
     <script src="js/utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="js/dashboard.js"></script>
+
+    <script>
+        // Custom Logout Modal Functions
+        function logout() {
+            const logoutModal = document.getElementById('logout-modal');
+            if (logoutModal) {
+                logoutModal.style.display = 'flex';
+                logoutModal.style.opacity = '1';
+            }
+        }
+
+        function closeLogoutModal() {
+            const logoutModal = document.getElementById('logout-modal');
+            if (logoutModal) {
+                logoutModal.style.opacity = '0';
+                setTimeout(() => {
+                    logoutModal.style.display = 'none';
+                    logoutModal.style.opacity = '1';
+                }, 200);
+            }
+        }
+
+        function confirmLogout() {
+            // Standard logout functionality
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+    </script>
 </body>
 
 </html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success | Event Management</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .status-container {
+            max-width: 500px;
+            margin: 100px auto;
+            text-align: center;
+            padding: 3rem;
+        }
+        .success-icon {
+            font-size: 5rem;
+            color: #10b981;
+            margin-bottom: 1.5rem;
+        }
+        .order-details {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="glass status-container animate-fade">
+            <div class="success-icon">✅</div>
+            <h1 style="margin-bottom: 1rem;">Payment Successful!</h1>
+            <p style="color: var(--text-muted);">Your registration has been confirmed. You can now view your ticket in the dashboard.</p>
+            
+            <div class="order-details">
+                <p><strong>Registration ID:</strong> <span id="reg-id">Loading...</span></p>
+                <p><strong>Status:</strong> <span style="color: #10b981;">Confirmed</span></p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <a id="view-ticket-btn" href="dashboard.html" class="btn btn-primary" style="flex: 1; padding: 0.85rem; font-weight: 600;">🎟️ View & Download Ticket</a>
+                <a href="dashboard.html" class="btn btn-outline" style="flex: 1; padding: 0.85rem;">Go to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const regId = urlParams.get('id') || urlParams.get('regId');
+        if (regId) {
+            document.getElementById('reg-id').textContent = '#' + regId;
+            const btn = document.getElementById('view-ticket-btn');
+            if (btn) {
+                btn.href = `dashboard.html?payment=success&regId=${regId}`;
+            }
+        }
+    </script>
+</body>
+</html>

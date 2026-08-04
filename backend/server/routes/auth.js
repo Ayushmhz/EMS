@@ -120,9 +120,12 @@ router.post('/login', async (req, res) => {
 
         // Role-based Authorization check
         const { requiredRole } = req.body;
-        if (requiredRole && user.role !== requiredRole) {
-            const errorMessage = requiredRole === 'admin'
-                ? 'Access Denied .Admin access only'
+        const userRole = (user.role || '').toLowerCase().trim();
+        const reqRole = (requiredRole || '').toLowerCase().trim();
+
+        if (requiredRole && userRole !== reqRole) {
+            const errorMessage = reqRole === 'admin'
+                ? 'Access Denied. Admin access only'
                 : 'Please Use Admin Portal';
             return res.status(403).json({ message: errorMessage });
         }
