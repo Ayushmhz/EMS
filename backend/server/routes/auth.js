@@ -58,19 +58,27 @@ const validatePassword = (password) => {
 
     // Check for simple patterns like "ababab" or "121212"
     if (password.length >= 6) {
-        const pattern = password.substring(0, 2);
-        let isPattern = true;
-        for (let i = 0; i < password.length; i += 2) {
-            if (password.substring(i, i + 2) !== pattern) {
-                isPattern = false;
-                break;
-            }
+        const half = password.substring(0, Math.floor(password.length / 2));
+        if (password === half + half) {
+            return { valid: false, message: "Password is too weak. Avoid simple repetitive patterns" };
         }
-        if (isPattern) return { valid: false, message: "Password is too weak. Please choose a stronger password" };
     }
 
     return { valid: true };
 };
+
+// TEMPORARY ENVIRONMENT DEBUG ENDPOINT
+router.get('/test-env', (req, res) => {
+    res.json({
+        FRONTEND_URL: process.env.FRONTEND_URL || 'NOT SET',
+        BACKEND_URL: process.env.BACKEND_URL || 'NOT SET',
+        KHALTI_SECRET_KEY: process.env.KHALTI_SECRET_KEY ? `${process.env.KHALTI_SECRET_KEY.substring(0, 4)}...` : 'NOT SET',
+        KHALTI_PUBLIC_KEY: process.env.KHALTI_PUBLIC_KEY ? `${process.env.KHALTI_PUBLIC_KEY.substring(0, 4)}...` : 'NOT SET',
+        ESEWA_SECRET_KEY: process.env.ESEWA_SECRET_KEY ? `${process.env.ESEWA_SECRET_KEY.substring(0, 4)}...` : 'NOT SET',
+        ESEWA_PRODUCT_CODE: process.env.ESEWA_PRODUCT_CODE || 'NOT SET',
+        CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || 'NOT SET',
+    });
+});
 
 // Register
 router.post('/register', async (req, res) => {
