@@ -10,13 +10,13 @@ router.get('/revenue', authenticateToken, isAdmin, async (req, res) => {
         const [revenueRow] = await db.execute(`
             SELECT SUM(p.amount) as total 
             FROM payments p
-            INNER JOIN registrations r ON p.transaction_id = r.transaction_id AND r.payment_status = "paid"
-            WHERE p.payment_status = "paid"
+            INNER JOIN registrations r ON p.transaction_id = r.transaction_id AND r.payment_status = 'paid'
+            WHERE p.payment_status = 'paid'
         `);
         const totalRevenue = revenueRow[0].total || 0;
 
         // 2. Paid Tickets Sold
-        const [paidTicketsRow] = await db.execute('SELECT COUNT(*) as count FROM registrations WHERE payment_status = "paid" AND amount > 0');
+        const [paidTicketsRow] = await db.execute('SELECT COUNT(*) as count FROM registrations WHERE payment_status = \'paid\' AND amount > 0');
         const paidTicketsSold = paidTicketsRow[0].count;
 
         // 3. Free Event Registrations
@@ -27,9 +27,9 @@ router.get('/revenue', authenticateToken, isAdmin, async (req, res) => {
         const [profitableEventRow] = await db.execute(`
             SELECT e.title, SUM(p.amount) as revenue
             FROM payments p
-            INNER JOIN registrations r ON p.transaction_id = r.transaction_id AND r.payment_status = "paid"
+            INNER JOIN registrations r ON p.transaction_id = r.transaction_id AND r.payment_status = 'paid'
             JOIN events e ON p.event_id = e.id
-            WHERE p.payment_status = "paid"
+            WHERE p.payment_status = 'paid'
             GROUP BY e.id
             ORDER BY revenue DESC
             LIMIT 1
@@ -40,8 +40,8 @@ router.get('/revenue', authenticateToken, isAdmin, async (req, res) => {
         const [monthlyRevenue] = await db.execute(`
             SELECT DATE_FORMAT(p.created_at, '%b %Y') as month, SUM(p.amount) as total
             FROM payments p
-            INNER JOIN registrations r ON p.transaction_id = r.transaction_id AND r.payment_status = "paid"
-            WHERE p.payment_status = "paid"
+            INNER JOIN registrations r ON p.transaction_id = r.transaction_id AND r.payment_status = 'paid'
+            WHERE p.payment_status = 'paid'
             GROUP BY month
             ORDER BY MIN(p.created_at) DESC
             LIMIT 6
@@ -59,10 +59,10 @@ router.get('/revenue', authenticateToken, isAdmin, async (req, res) => {
         const [recentTransactions] = await db.execute(`
             SELECT p.*, u.fullname as user_name, e.title as event_title
             FROM payments p
-            INNER JOIN registrations r ON p.transaction_id = r.transaction_id AND r.payment_status = "paid"
+            INNER JOIN registrations r ON p.transaction_id = r.transaction_id AND r.payment_status = 'paid'
             JOIN users u ON p.user_id = u.id
             JOIN events e ON p.event_id = e.id
-            WHERE p.payment_status = "paid"
+            WHERE p.payment_status = 'paid'
             ORDER BY p.created_at DESC
             LIMIT 10
         `);

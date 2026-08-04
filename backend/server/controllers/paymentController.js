@@ -15,7 +15,7 @@ class PaymentController {
         try {
             // Check if already registered
             const [existing] = await db.execute(
-                'SELECT id FROM registrations WHERE user_id = ? AND event_id = ? AND payment_status = "paid"',
+                'SELECT id FROM registrations WHERE user_id = ? AND event_id = ? AND payment_status = \'paid\'',
                 [user_id, event_id]
             );
             if (existing.length > 0) {
@@ -126,7 +126,7 @@ class PaymentController {
         try {
             // Check if already registered
             const [existing] = await db.execute(
-                'SELECT id FROM registrations WHERE user_id = ? AND event_id = ? AND payment_status = "paid"',
+                'SELECT id FROM registrations WHERE user_id = ? AND event_id = ? AND payment_status = \'paid\'',
                 [user_id, event_id]
             );
             if (existing.length > 0) {

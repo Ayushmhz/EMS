@@ -39,7 +39,7 @@ router.post('/', authenticateToken, async (req, res) => {
             }
         }
 
-        const [regCount] = await db.execute('SELECT COUNT(*) as count FROM registrations WHERE event_id = ? AND payment_status = "paid"', [event_id]);
+        const [regCount] = await db.execute('SELECT COUNT(*) as count FROM registrations WHERE event_id = ? AND payment_status = \'paid\'', [event_id]);
 
         if (regCount[0].count >= event.capacity) {
             return res.status(400).json({ message: 'Event reached maximum capacity.' });

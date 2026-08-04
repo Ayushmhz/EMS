@@ -65,7 +65,7 @@ router.post('/verify', authenticateToken, async (req, res) => {
         }
 
         // Mark as Checked In (verified)
-        await db.execute('UPDATE registrations SET check_in_status = "checked_in", check_in_time = NOW() WHERE id = ?', [registration_id]);
+        await db.execute('UPDATE registrations SET check_in_status = \'checked_in\', check_in_time = NOW() WHERE id = ?', [registration_id]);
 
         res.json({
             success: true,

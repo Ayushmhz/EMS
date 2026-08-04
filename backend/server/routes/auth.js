@@ -258,7 +258,7 @@ router.post('/change-password', authenticateToken, async (req, res) => {
 // Get all students (Admin only)
 router.get('/students', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const [users] = await db.execute('SELECT id, fullname, email, faculty, created_at FROM users WHERE role = "student"');
+        const [users] = await db.execute('SELECT id, fullname, email, faculty, created_at FROM users WHERE role = \'student\'');
         res.json(users);
     } catch (err) {
         console.error(err);
