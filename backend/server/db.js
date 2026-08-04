@@ -41,6 +41,14 @@ async function autoMigrate() {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         `);
 
+        // Check Users table
+        const [userCols] = await promisePool.execute('DESCRIBE users');
+        const userFields = userCols.map(c => c.Field);
+        if (!userFields.includes('profile_pic')) {
+            await promisePool.execute("ALTER TABLE users ADD COLUMN profile_pic VARCHAR(255) DEFAULT NULL");
+            console.log('✅ Added profile_pic column to users');
+        }
+
         await promisePool.execute(`
             CREATE TABLE IF NOT EXISTS events (
                 id INT AUTO_INCREMENT PRIMARY KEY,

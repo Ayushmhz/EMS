@@ -25,9 +25,12 @@ class PaymentController {
             // Generate a unique purchase order ID (include ticket_type for callback handling)
             const purchase_order_id = `ORDER_${user_id}_${event_id}_${ticket_type}_${Date.now()}`;
             
+            const rawFrontendUrl = (process.env.FRONTEND_URL || '').trim();
+            const rawBackendUrl = (process.env.BACKEND_URL || '').trim();
+
             const details = {
-                return_url: `${process.env.BACKEND_URL}/api/payments/khalti/callback`,
-                website_url: process.env.FRONTEND_URL,
+                return_url: `${rawBackendUrl}/api/payments/khalti/callback`,
+                website_url: rawFrontendUrl,
                 amount: Math.round(parseFloat(amount) * 100), // Khalti expects paisa as integer
                 purchase_order_id: purchase_order_id,
                 purchase_order_name: `Event Registration - Event ID ${event_id}`,
@@ -145,6 +148,9 @@ class PaymentController {
             const signatureString = `total_amount=${formattedAmount},transaction_uuid=${transaction_uuid},product_code=${product_code}`;
             const signature = generateEsewaSignature(signatureString, secret);
 
+            const rawFrontendUrl = (process.env.FRONTEND_URL || '').trim();
+            const rawBackendUrl = (process.env.BACKEND_URL || '').trim();
+
             const formData = {
                 amount: formattedAmount,
                 tax_amount: '0',
@@ -153,8 +159,8 @@ class PaymentController {
                 product_code: product_code,
                 product_service_charge: '0',
                 product_delivery_charge: '0',
-                success_url: `${process.env.BACKEND_URL}/api/payments/esewa/callback`,
-                failure_url: `${process.env.FRONTEND_URL}/payment-failure.html`,
+                success_url: `${rawBackendUrl}/api/payments/esewa/callback`,
+                failure_url: `${rawFrontendUrl}/payment-failure.html`,
                 signed_field_names: "total_amount,transaction_uuid,product_code",
                 signature: signature
             };
