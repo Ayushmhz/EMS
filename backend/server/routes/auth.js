@@ -77,6 +77,8 @@ router.get('/test-env', (req, res) => {
         ESEWA_SECRET_KEY: process.env.ESEWA_SECRET_KEY ? `${process.env.ESEWA_SECRET_KEY.substring(0, 4)}...` : 'NOT SET',
         ESEWA_PRODUCT_CODE: process.env.ESEWA_PRODUCT_CODE || 'NOT SET',
         CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || 'NOT SET',
+        CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY ? `${process.env.CLOUDINARY_API_KEY.substring(0, 4)}...` : 'NOT SET',
+        CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET ? `${process.env.CLOUDINARY_API_SECRET.substring(0, 4)}...` : 'NOT SET',
     });
 });
 
